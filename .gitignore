@@ -1,0 +1,15 @@
+*.ipr
+*.iml
+*.iws
+target/
+lib_managed/
+src_managed/
+project/boot/
+project/plugins/src_managed/
+scala-2.7.7/
+scala-2.8.0.RC3/
+lib/
+lib_managed/
+betfair-api/src/main/java
+out/
+.idea/
