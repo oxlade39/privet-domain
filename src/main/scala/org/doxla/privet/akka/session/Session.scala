@@ -1,38 +1,32 @@
 package org.doxla.privet.akka.session
 
 import org.doxla.privet.akka.conf.{Logging, BetfairUserConfig}
-import dk.bot.betfairservice.{BetFairServiceImpl, BetFairService}
 import akka.actor.Actor
+import demo.handler.{GlobalAPI, ExchangeAPI}
+import demo.util.APIContext
 
 trait Session {
   def login: Unit
+  def logout: Unit
   def loggedIn: Boolean
 }
 
-trait BetfairSession extends Session with BetfairUserConfig with Logging {
-  private[this] var sessionEstablished = false
+sealed trait SessionAction
+case object Login extends SessionAction
+case object Logout extends SessionAction
+case object GetSessionStatus extends SessionAction
+case class SessionStatus(loggedIn: Boolean) extends SessionAction
 
-  lazy val betfairService: BetFairService = {
-    val betfairServiceFactoryBean = new dk.bot.betfairservice.DefaultBetFairServiceFactoryBean();
-    betfairServiceFactoryBean.setUser(username)
-    betfairServiceFactoryBean.setPassword(password)
-    betfairServiceFactoryBean.setProductId(productId)
-    betfairServiceFactoryBean.getObject.asInstanceOf[BetFairService]
+trait SessionActor extends Actor {
+  val session: Session
+
+  def respondWithStatus: Unit = {
+    self.reply(SessionStatus(session.loggedIn))
   }
 
-  def login = {
-    log.debug("logging into betfair using %s:%s", username, password)
-    val response = betfairService.login
-    log.debug("log in success: %s, response: %s:%s", response.isSuccess, response.getApiStatusCode, response.getExceptionMessage)
-    if(response.isSuccess) {
-      sessionEstablished = true
-    }
-
+  protected def receive = {
+    case Login => session.login; respondWithStatus
+    case Logout => session.logout; respondWithStatus
+    case GetSessionStatus => respondWithStatus
   }
-
-  def loggedIn = sessionEstablished
 }
-
-//class BetfairSessionActor extends Actor {
-//
-//}
