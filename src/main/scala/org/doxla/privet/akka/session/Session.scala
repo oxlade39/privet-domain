@@ -1,9 +1,6 @@
 package org.doxla.privet.akka.session
 
-import org.doxla.privet.akka.conf.{Logging, BetfairUserConfig}
 import akka.actor.Actor
-import demo.handler.{GlobalAPI, ExchangeAPI}
-import demo.util.APIContext
 
 trait Session {
   def login: Unit
