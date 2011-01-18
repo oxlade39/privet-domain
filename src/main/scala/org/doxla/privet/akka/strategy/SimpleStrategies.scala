@@ -5,6 +5,9 @@ package simplestrategies {
 import org.doxla.privet.akka.conf.Logging
 import org.doxla.privet.akka.market._
 import akka.actor.{Actor, ActorRef, FSM}
+import akka.actor.FSM._
+import akka.util.Duration
+import akka.util.duration._
 
 sealed trait TradingState
 case object NoBetsPlaced extends TradingState
@@ -19,10 +22,14 @@ case class RunnerUpdate(id: Long, price: BigDecimal, amountAvailable: BigDecimal
 trait TradingStrategy extends Actor with FSM[TradingState, Unit] {
 
   val marketHistory: MarketHistory
+  val betDecider: ActorRef
 
-  startWith(NoBetsPlaced, Unit)
+  startWith(NoBetsPlaced, Unit, 1 second)
 
   when(NoBetsPlaced) {
+    case Event(StateTimeout, _) =>
+      log.debug("Received StateTimeout")
+      stay
     case Event(RunnerUpdate(id, price, available), _) =>
       log.debug("Received runner updated from: %s", NoBetsPlaced)
       val runnerHistory: RunnerPriceHistory = marketHistory.runnerPriceHistory(id)
@@ -60,4 +67,26 @@ trait TradingStrategy extends Actor with FSM[TradingState, Unit] {
   initialize
 }
 
+sealed trait TraderState
+case object Waiting extends TraderState
+case object SearchingForBack extends TraderState
+case object BackMade extends TraderState
+
+case class BetOn(runnerId: Option[Long])
+
+trait Trader extends Actor with FSM[TraderState, BetOn] {
+  val marketHistory: MarketHistory
+  val runnerId: Long
+
+  startWith(SearchingForBack, BetOn(None), 500 milliseconds)
+
+  when(SearchingForBack) {
+    case Event(StateTimeout, _) => marketHistory.runnerPriceHistory(runnerId).currentPriceChange match {
+      case Decreasing(factor) if(factor > priceDecreaseFactorTrigger) =>
+        goto(BackMade)
+    }
+  }
+
+  def priceDecreaseFactorTrigger = -15
+}
 }
