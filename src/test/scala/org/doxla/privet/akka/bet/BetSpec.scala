@@ -57,4 +57,16 @@ class BetSpec extends FlatSpec with MustMatchers {
     (Back(2, 5, Matched) arbWith Lay(3, 5, Matched)).minimumProfit must equal(10 - 15)
     (Back(2, 5, Matched) arbWith Lay(2, 5, Matched)).minimumProfit must equal(0)
   }
+
+  "A Back arbed with a Lay" should "yield a profit if the minimim profit is greater than zero" in {
+    (Back(2, 2, Matched) arbWith Lay(3, 1.2, Matched)).yieldsProfit must equal(true)
+  }
+
+  "A Back arbed with a Lay" should "not yield a profit if the minimim profit is less than zero" in {
+    (Back(2, 1.5, Matched) arbWith Lay(3, 1.2, Matched)).yieldsProfit must equal(false)
+  }
+
+  "A Back arbed with a Lay" should "not yield a profit if the minimim profit is zero" in {
+    (Back(2, 1.5, Matched) arbWith Lay(2, 1.5, Matched)).yieldsProfit must equal(false)
+  }
 }

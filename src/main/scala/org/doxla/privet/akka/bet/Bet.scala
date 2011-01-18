@@ -27,4 +27,5 @@ case class Arbitrage(back: Back, lay: Lay) {
   def profitIfLayWins: BigDecimal = lay.potentialProfit - back.potentialLiability
 
   def minimumProfit: BigDecimal = profitIfBackWins.min(profitIfLayWins)
+  def yieldsProfit: Boolean = minimumProfit > 0
 }
