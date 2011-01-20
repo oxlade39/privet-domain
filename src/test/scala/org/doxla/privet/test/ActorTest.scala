@@ -7,16 +7,16 @@ import org.scalatest.{Suite, BeforeAndAfterEach}
 trait ActorTest extends TestKit with BeforeAndAfterEach {
   this: Suite =>
 
-  private var actor: ActorRef = null
+  private var actors: List[ActorRef] = Nil
 
-  def initialiseActor: ActorRef
+  def initialiseActors: List[ActorRef]
 
   override protected def beforeEach = {
-    actor = initialiseActor
-    actor.start
+    actors = initialiseActors
+    for(actor <- actors) actor.start
   }
 
   override protected def afterEach = {
-    actor.stop
+    for(actor <- actors) actor.stop
   }
 }

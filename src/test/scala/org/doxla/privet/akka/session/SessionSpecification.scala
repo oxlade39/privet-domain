@@ -33,8 +33,9 @@ class SessionSpecification extends FlatSpec with ActorTest with Mockito with Moc
     val session = mockSession
   }
 
-  def initialiseActor = {
+  def initialiseActors = {
     session = actorOf(new TestSessionActor)
     session.start
+    session :: Nil
   }
 }

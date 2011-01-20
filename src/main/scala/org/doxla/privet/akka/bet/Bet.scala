@@ -5,7 +5,8 @@ sealed trait BetStatus
 case object Matched extends BetStatus
 case object UnMatched extends BetStatus
 
-sealed abstract class Bet(stake: BigDecimal, odds: BigDecimal, betStatus: BetStatus){
+sealed trait RunnerPosition
+sealed abstract class Bet(stake: BigDecimal, odds: BigDecimal, betStatus: BetStatus) extends RunnerPosition {
   def potentialLiability: BigDecimal
   def potentialProfit: BigDecimal
 }
@@ -22,7 +23,7 @@ case class Lay(stake: BigDecimal, odds: BigDecimal, betStatus: BetStatus) extend
   def arbWith(other: Back): Arbitrage = Arbitrage(other, this)
 }
 
-case class Arbitrage(back: Back, lay: Lay) {
+case class Arbitrage(back: Back, lay: Lay) extends RunnerPosition {
   def profitIfBackWins: BigDecimal = back.potentialProfit - lay.potentialLiability
   def profitIfLayWins: BigDecimal = lay.potentialProfit - back.potentialLiability
 

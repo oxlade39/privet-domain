@@ -1,6 +1,4 @@
-package org.doxla.privet.akka.strategy
-
-package simplestrategies {
+package org.doxla.privet.akka.strategy.simple
 
 import akka.actor.{Actor, ActorRef, FSM}
 import akka.actor.FSM._
@@ -14,7 +12,7 @@ case object BackMatched extends TradingState
 case object LayPlaced extends TradingState
 case object LayMatched extends TradingState
 
-case class Trade(lastRate: BigDecimal, back: Option[Bet], arb: Option[Arbitrage])
+case class Trade(lastRate: BigDecimal, back: Option[RunnerPosition])
 
 sealed trait TradingMessage
 case class RateUpdate(currentPrice: BigDecimal, change: Int) extends TradingMessage
@@ -25,17 +23,18 @@ trait TradingStrategy extends Actor with FSM[TradingState, Trade] {
 
   val betPlacer: ActorRef
 
-  startWith(NoBetsPlaced, Trade(0, None, None), 1 second)
+  startWith(NoBetsPlaced, Trade(0, None), 1 second)
 
   when(NoBetsPlaced) {
     case Event(StateTimeout, _) =>
       log.debug("Received StateTimeout")
       stay
     case Event(RateUpdate(rate, change), _) =>
-      stay using Trade(rate, None, None)
-    case Event(PlaceBack(amount), Trade(lastRate, _, _)) =>
+      log.debug("----------Received: %s", RateUpdate(rate, change))
+      stay using Trade(rate, None)
+    case Event(PlaceBack(amount), Trade(lastRate, _)) =>
       betPlacer ! PlaceBack(amount)
-      goto(BackPlaced) using Trade(lastRate, Some(Back(amount, lastRate, UnMatched)), None)
+      goto(BackPlaced) using Trade(lastRate, Some(Back(amount, lastRate, UnMatched)))
   }
 
   when(BackPlaced) {
@@ -61,6 +60,4 @@ trait TradingStrategy extends Actor with FSM[TradingState, Trade] {
   }
 
   initialize
-}
-
 }
