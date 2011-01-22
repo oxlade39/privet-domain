@@ -12,10 +12,10 @@ case object BackMatched extends TradingState
 case object LayPlaced extends TradingState
 case object LayMatched extends TradingState
 
-case class Trade(lastRate: BigDecimal, back: Option[RunnerPosition])
+case class Trade(lastRate: Odds, back: Option[RunnerPosition])
 
 sealed trait TradingMessage
-case class RateUpdate(currentPrice: BigDecimal, change: Int) extends TradingMessage
+case class RateUpdate(currentOdds: Odds, change: Int) extends TradingMessage
 case class PlaceBack(amount: BigDecimal) extends TradingMessage
 case class Matched(price: BigDecimal)
 
@@ -23,7 +23,7 @@ trait TradingStrategy extends Actor with FSM[TradingState, Trade] {
 
   val betPlacer: ActorRef
 
-  startWith(NoBetsPlaced, Trade(0, None), 1 second)
+  startWith(NoBetsPlaced, Trade(Odds(0), None), 1 second)
 
   when(NoBetsPlaced) {
     case Event(StateTimeout, _) =>
@@ -33,6 +33,7 @@ trait TradingStrategy extends Actor with FSM[TradingState, Trade] {
       log.debug("----------Received: %s", RateUpdate(rate, change))
       stay using Trade(rate, None)
     case Event(PlaceBack(amount), Trade(lastRate, _)) =>
+      log.debug("----------Received: %s", PlaceBack(amount))
       betPlacer ! PlaceBack(amount)
       goto(BackPlaced) using Trade(lastRate, Some(Back(amount, lastRate, UnMatched)))
   }

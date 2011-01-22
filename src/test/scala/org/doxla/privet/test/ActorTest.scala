@@ -1,8 +1,8 @@
 package org.doxla.privet.test
 
 import akka.util.TestKit
-import akka.actor.ActorRef
 import org.scalatest.{Suite, BeforeAndAfterEach}
+import akka.actor.{Actor, ActorRef}
 
 trait ActorTest extends TestKit with BeforeAndAfterEach {
   this: Suite =>
@@ -18,5 +18,11 @@ trait ActorTest extends TestKit with BeforeAndAfterEach {
 
   override protected def afterEach = {
     for(actor <- actors) actor.stop
+  }
+}
+
+class TestEchoActor extends Actor {
+  def receive = {
+    case msg => self.reply(msg)
   }
 }
