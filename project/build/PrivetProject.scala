@@ -20,7 +20,8 @@ class PrivetProject(info: ProjectInfo) extends DefaultProject(info) with AkkaPro
   val mockito = "org.mockito" % "mockito-all" % "1.8.4" % "test" withSources
   val hamcrest = "org.hamcrest" % "hamcrest-all" % "1.1" % "test" withSources
 
-  val akkaTypedActor = akkaModule("typed-actor")
+  val akkaCore = akkaActor withSources
+  val akkaTypedActor = akkaModule("typed-actor") withSources
   // val akkaFsm = akkaModule("fsm")
 
 }

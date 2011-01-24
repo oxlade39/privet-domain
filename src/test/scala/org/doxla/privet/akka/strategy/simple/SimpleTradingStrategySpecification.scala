@@ -21,7 +21,7 @@ class SimpleTradingStrategySpecification extends FlatSpec with ActorTest with Mo
     underTest ! RateUpdate(Odds(1), -1)
   }
 
-  it should "forward PlaceBet messages to the betPlacer" in {
+  it should "forward PlaceBack messages to the betPlacer" in {
     within(1000 millis) {
       underTest ! PlaceBack(10)
       expectMsg(PlaceBack(10))

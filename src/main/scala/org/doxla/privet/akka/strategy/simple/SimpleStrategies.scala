@@ -25,40 +25,32 @@ trait TradingStrategy extends Actor with FSM[TradingState, Trade] {
 
   startWith(NoBetsPlaced, Trade(Odds(0), None), 1 second)
 
-  when(NoBetsPlaced) {
-    case Event(StateTimeout, _) =>
-      log.debug("Received StateTimeout")
+  val receivePriceUpdate: StateFunction = {
+    case Event(RateUpdate(rate, change), currentTrade) =>
+      stay using Trade(rate, currentTrade.back)
+  }
+
+  val logReceive: StateFunction = {
+    case Event(message, trade) =>
+      log.debug("Received %s at trade %s", message, trade)
       stay
-    case Event(RateUpdate(rate, change), _) =>
-      log.debug("----------Received: %s", RateUpdate(rate, change))
-      stay using Trade(rate, None)
+  }
+
+  val placeBackWithBetPlacer: StateFunction = {
     case Event(PlaceBack(amount), Trade(lastRate, _)) =>
-      log.debug("----------Received: %s", PlaceBack(amount))
       betPlacer ! PlaceBack(amount)
       goto(BackPlaced) using Trade(lastRate, Some(Back(amount, lastRate, UnMatched)))
   }
 
-  when(BackPlaced) {
-    case Event(RateUpdate(price, change), _) => stay
-  }
+  when(NoBetsPlaced)(receivePriceUpdate orElse placeBackWithBetPlacer)
 
-  when(BackMatched) {
-    case Event(_, _) =>
-      log.debug("Received runner updated from: %s", BackMatched)
-      stay
-  }
+  when(BackPlaced)(receivePriceUpdate)
 
-  when(LayPlaced) {
-    case Event(_, _) =>
-      log.debug("Received runner updated from: %s", LayPlaced)
-      stay
-  }
+  when(BackMatched)(receivePriceUpdate)
 
-  when(LayMatched) {
-    case Event(_, _) =>
-      log.debug("Received runner updated from: %s", LayMatched)
-      stay
-  }
+  when(LayPlaced)(receivePriceUpdate)
+
+  when(LayMatched)(receivePriceUpdate)
 
   initialize
 }
