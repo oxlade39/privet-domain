@@ -18,6 +18,7 @@ case class Odds(value: BigDecimal) {
 }
 
 sealed trait RunnerPosition
+case object Watching extends RunnerPosition
 sealed abstract class Bet(stake: BigDecimal, odds: Odds, betStatus: BetStatus) extends RunnerPosition {
   def potentialLiability: BigDecimal
   def potentialProfit: BigDecimal
