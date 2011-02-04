@@ -42,11 +42,31 @@ class SimpleTradingStrategySpecification extends FlatSpec with ActorTest with Mo
     }
   }
 
-  it should "have an Matched runner position when #betPlacer responds to a PlaceBet" in {
+  it should "preserve the RunnerPosition when receiving RateUpdates after a bet has been placed" in {
+    withinAnExceptableTime {
+      placeBack(11)
+      assertRunnerPositionIs(Back(11, Odds(0), UnMatched))
+      underTest ! RateUpdate(Odds(100), 10000)
+      assertRunnerPositionIs(Back(11, Odds(0), UnMatched))
+    }
+  }
+
+  it should "have a Matched runner position when #betPlacer responds to a PlaceBet" in {
     withinAnExceptableTime {
       placeBack()
       underTest ! BackMatched
       assertRunnerPositionIs(Back(10, Odds(0), Matched))
+    }
+  }
+
+  it should "preserve the RunnerPosition when receiving RateUpdates after a bet has been matched" in {
+    withinAnExceptableTime {
+      placeBack(11)
+      underTest ! BackMatched
+
+      assertRunnerPositionIs(Back(11, Odds(0), Matched))
+      underTest ! RateUpdate(Odds(100), 10000)
+      assertRunnerPositionIs(Back(11, Odds(0), Matched))
     }
   }
 
