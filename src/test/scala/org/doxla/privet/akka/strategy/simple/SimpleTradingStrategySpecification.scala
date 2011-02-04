@@ -16,7 +16,7 @@ class SimpleTradingStrategySpecification extends FlatSpec with ActorTest with Mo
     val betPlacer = actor
   }
 
-  def withinAnExceptableTime[T] = within(100 millis)(_: T)
+  def withinAnExceptableTime[T](f : => T) = within(100 millis)(f)
 
   "SimpleTradingStrategy" should "start in a Watching position" in {
     withinAnExceptableTime {
@@ -28,19 +28,26 @@ class SimpleTradingStrategySpecification extends FlatSpec with ActorTest with Mo
     underTest ! RateUpdate(Odds(1), -1)
   }
 
-  it should "forward PlaceBack messages to the betPlacer" in {
+  it should "forward PlaceBack messages to #betPlacer" in {
     withinAnExceptableTime {
       underTest ! PlaceBack(10)
       expectMsg(PlaceBack(10))
     }
   }
 
-  it should "have an UnMatched runner position after placing a back" in {
+  it should "have an UnMatched runner position after placing a back without response" in {
     withinAnExceptableTime {
       placeBack()
       assertRunnerPositionIs(Back(10, Odds(0), UnMatched))
     }
+  }
 
+  it should "have an Matched runner position when #betPlacer responds to a PlaceBet" in {
+    withinAnExceptableTime {
+      placeBack()
+      underTest ! BackMatched
+      assertRunnerPositionIs(Back(10, Odds(0), Matched))
+    }
   }
 
   def placeBack(amount: BigDecimal = 10): Unit = {

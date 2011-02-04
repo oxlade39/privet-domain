@@ -5,19 +5,19 @@ import akka.actor.FSM._
 import akka.util.duration._
 import org.doxla.privet.akka.bet._
 
-sealed trait TradingState
-case object NoBetsPlaced extends TradingState
-case object BackPlaced extends TradingState
-case object BackMatched extends TradingState
-case object LayPlaced extends TradingState
-case object LayMatched extends TradingState
-
 case class Trade(lastRate: Odds, back: RunnerPosition)
 
 sealed trait TradingMessage
 case class RateUpdate(currentOdds: Odds, change: Int) extends TradingMessage
 case class PlaceBack(amount: BigDecimal) extends TradingMessage
 case object GetRunerPosition extends TradingMessage
+
+sealed trait TradingState
+case object NoBetsPlaced extends TradingState
+case object BackPlaced extends TradingState
+case object BackMatched extends TradingState with TradingMessage
+case object LayPlaced extends TradingState
+case object LayMatched extends TradingState
 
 trait TradingStrategy extends Actor with FSM[TradingState, Trade] {
 
@@ -48,11 +48,16 @@ trait TradingStrategy extends Actor with FSM[TradingState, Trade] {
       goto(BackPlaced) using Trade(lastRate, Back(amount, lastRate, UnMatched))
   }
 
-  when(NoBetsPlaced)(receivePriceUpdate orElse placeBackWithBetPlacer orElse respondWithRunnerPosition)
+  val receiveNotificationOurBackHasBeenMatched: StateFunction = {
+    case Event(BackMatched, Trade(ods, Back(stake, odds, _))) =>
+      goto(BackMatched) using Trade(ods, Back(stake, odds, Matched))
+  }
 
-  when(BackPlaced)(receivePriceUpdate orElse respondWithRunnerPosition)
+  when(NoBetsPlaced)(receivePriceUpdate orElse respondWithRunnerPosition orElse placeBackWithBetPlacer)
 
-  when(BackMatched)(receivePriceUpdate)
+  when(BackPlaced)(receivePriceUpdate orElse respondWithRunnerPosition orElse receiveNotificationOurBackHasBeenMatched)
+
+  when(BackMatched)(receivePriceUpdate orElse respondWithRunnerPosition)
 
   when(LayPlaced)(receivePriceUpdate)
 
