@@ -9,7 +9,7 @@ trait DemoAPIBetfairSession extends Session with BetfairUserConfig with Logging 
   private var sessionEstablished = false
   private lazy val apiCtx = new APIContext()
 
-  def login = {
+  def login {
     log.debug("logging into betfair using %s:*****", username)
     GlobalAPI.login(apiCtx, username, password)
     log.debug("log in success")
@@ -18,7 +18,7 @@ trait DemoAPIBetfairSession extends Session with BetfairUserConfig with Logging 
 
   def loggedIn = sessionEstablished
 
-  def logout = {
+  def logout {
     GlobalAPI.logout(apiCtx)
     log.debug("Logged out of Betfair")
   }
