@@ -44,6 +44,23 @@ class ArbitrageSpec extends FlatSpec with MustMatchers {
     (Back(2, Odds(5), Matched) arbWith Lay(2, Odds(5), Matched)).minimumProfit must equal(0)
   }
 
+  "A Back arbed with a Lay" should "have a maximum profit of the minimum from the profit if Lay and profit if Back wins" in {
+
+    Back(2, Odds(5), Matched).potentialProfit must equal(10)
+    Lay(3, Odds(2), Matched).potentialLiability must equal(6)
+    // if back wins, win 10, lose 6
+    (Back(2, Odds(5), Matched) arbWith Lay(3, Odds(2), Matched)).profitIfBackWins must equal(10 - 6)
+
+    Lay(3, Odds(2), Matched).potentialProfit must equal(3)
+    Back(2, Odds(5), Matched).potentialLiability must equal(2)
+    // if lay wins, win 3, lose 2
+    (Back(2, Odds(5), Matched) arbWith Lay(3, Odds(2), Matched)).profitIfLayWins must equal(3 - 2)
+
+    // maximum of ((10-6) or (3-2)) -> (10-6)
+    (Back(2, Odds(5), Matched) arbWith Lay(3, Odds(2), Matched)).maximumProfit must equal(10 - 6)
+  }
+
+
   "A Back arbed with a Lay" should "yield a profit if the minimim profit is greater than zero" in {
     (Back(2, Odds(2), Matched) arbWith Lay(3, Odds(1.2), Matched)).yieldsProfit must equal(true)
   }
@@ -54,5 +71,9 @@ class ArbitrageSpec extends FlatSpec with MustMatchers {
 
   "A Back arbed with a Lay" should "not yield a profit if the minimim profit is zero" in {
     (Back(2, Odds(1.5), Matched) arbWith Lay(2, Odds(1.5), Matched)).yieldsProfit must equal(false)
+  }
+
+  "A Back arbed with a Lay" should "have a Spread of the minimum profit and the maximum profit" in {
+    (Back(2, Odds(5), Matched) arbWith Lay(3, Odds(2), Matched)).spread must equal(Spread(4, 1))
   }
 }
