@@ -31,5 +31,6 @@ case class Arbitrage(back: Back, lay: Lay) extends RunnerPosition {
   def profitIfLayWins: BigDecimal = lay.potentialProfit - back.potentialLiability
 
   def minimumProfit: BigDecimal = profitIfBackWins.min(profitIfLayWins)
+  def maximumExposure = minimumProfit
   def yieldsProfit: Boolean = minimumProfit > 0
 }
