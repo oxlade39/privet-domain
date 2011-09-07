@@ -7,6 +7,9 @@ class SpreadSpec extends FlatSpec with MustMatchers {
   "Spread" should "have an upper and lower bound" in {
     Spread(1, 2).upperBound must equal(2)
     Spread(1, 2).lowerBound must equal(1)
+
+    Spread(2, 1).upperBound must equal(2)
+    Spread(2, 1).lowerBound must equal(1)
   }
 
   it should "be unordered" in {
