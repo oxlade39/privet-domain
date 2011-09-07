@@ -1,24 +1,9 @@
 package org.doxla.privet.akka.bet
 
-
-sealed trait BetStatus
-case object Matched extends BetStatus
-case object UnMatched extends BetStatus
-
-case class Probability(value: BigDecimal) {
-  def +(other: Probability) = Probability(value + other.value)
-  def -(other: Probability) = Probability(value - other.value)
-}
-object Probability {
-  lazy val Certain: Probability = Probability(1)
-}
-
-case class Odds(value: BigDecimal) {
-  def impliedProbability = Probability(BigDecimal(1) / value)
-}
-
 sealed trait RunnerPosition
+
 case object Watching extends RunnerPosition
+
 sealed abstract class Bet(stake: BigDecimal, odds: Odds, betStatus: BetStatus) extends RunnerPosition {
   def potentialLiability: BigDecimal
   def potentialProfit: BigDecimal
