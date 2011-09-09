@@ -9,7 +9,8 @@ scalaVersion := "2.8.1"
 offline := true
 
 resolvers ++= Seq(
-  "Local Maven Repository" at "file://"+Path.userHome.absolutePath+"/.m2/repository"
+  "Local Maven Repository" at "file://"+Path.userHome.absolutePath+"/.m2/repository",
+  ScalaToolsSnapshots
 )
 
 libraryDependencies ++= Seq(
