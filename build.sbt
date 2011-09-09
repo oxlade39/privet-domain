@@ -1,4 +1,4 @@
-name := "SpreadIt"
+name := "Privet Domain"
 
 version := "1.0"
 
